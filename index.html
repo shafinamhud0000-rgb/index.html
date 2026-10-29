@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Tower Editor — Neon Studio</title>
+<style>
+
+:root{
+  --bg:#05051a;--card:#0b1030;--card2:#111846;--line:#293a86;
+  --text:#f8f7ff;--muted:#a7b0e8;--cyan:#25e8ff;--violet:#782cff;
+  --pink:#ff35d3;--green:#63ffcf;--red:#ff557d;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;min-height:100vh;padding:16px;
+  background:
+    radial-gradient(ellipse at 12% 4%,#073c9c 0,transparent 30%),
+    radial-gradient(ellipse at 90% 8%,#6300a9 0,transparent 32%),
+    radial-gradient(ellipse at 50% 100%,#25005a 0,transparent 45%),
+    linear-gradient(155deg,#030514,#070922 55%,#03030d);
+  color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif;
+}
+.app{width:min(650px,100%);margin:auto}
+.top{
+  padding:20px 18px 22px;border:1px solid #3549a6;border-radius:28px;
+  background:linear-gradient(145deg,rgba(13,20,58,.98),rgba(5,7,25,.98));
+  box-shadow:0 25px 70px #000b,0 0 35px #392bff26;
+  position:relative;overflow:hidden;
+}
+.top:before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(125deg,#21eaff0c,transparent 42%,#f52cff0c)}
+.top:after{content:"";position:absolute;left:0;right:0;top:0;height:4px;
+  background:linear-gradient(90deg,var(--cyan),#354dff,var(--violet),var(--pink))}
+.brand{display:flex;align-items:center;gap:14px;position:relative;z-index:1}
+.logo{
+  width:58px;height:58px;flex:0 0 58px;border-radius:18px;display:grid;place-items:center;
+  background:linear-gradient(135deg,#00dfff 0%,#5336ff 52%,#ff28c9 100%);
+  border:1px solid #9bf7ff;box-shadow:0 0 22px #2ee9ff45,inset 0 1px 5px #fff8;
+  color:white;font-size:31px;font-weight:900;text-shadow:0 3px 8px #1b0c70;
+}
+h1{font-size:clamp(16px,4vw,21px);margin:0;letter-spacing:.4px;font-weight:900}
+.sub{font-size:10px;color:#aebaff;margin-top:5px;letter-spacing:1.2px}
+.status{
+  margin-top:19px;padding:12px 14px;border-radius:14px;
+  background:linear-gradient(100deg,#07152d,#100d2b);
+  border:1px solid #293e82;color:#c0c9f4;font-size:11px;
+  box-shadow:inset 0 0 20px #1d3cff12
+}
+.status b{color:var(--green)}
+.section{margin-top:14px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+button{
+  border:1px solid #35458f;border-radius:16px;padding:15px 10px;
+  color:#f9f8ff;background:linear-gradient(145deg,#171e50,#0d1232);
+  font-weight:850;font-size:11px;letter-spacing:.5px;cursor:pointer;
+  transition:transform .18s,border-color .18s,filter .18s;min-height:64px;
+  box-shadow:0 7px 18px #0003,inset 0 1px 0 #ffffff0d;
+}
+button:hover{transform:translateY(-2px);border-color:#6d7cff;filter:brightness(1.12)}
+button:active{transform:translateY(1px)}
+.primary{background:linear-gradient(135deg,#20eaff,#386bff);color:#06102c;border:0;box-shadow:0 5px 20px #1bceff2b}
+.encrypt{background:linear-gradient(135deg,#9b48ff,#ed36df);border:0;box-shadow:0 5px 20px #a02cff2b}
+.save{background:linear-gradient(135deg,#54ffe0,#3f9dff);color:#06172b;border:0;box-shadow:0 5px 20px #42ffe02b}
+.zip{background:linear-gradient(135deg,#171b49,#241044);color:#65f4ff;border:1px solid #7d49d9}
+.editor-head{display:flex;justify-content:space-between;align-items:center;margin:19px 2px 9px;gap:10px}
+.editor-head span{font-size:12px;font-weight:900;letter-spacing:.8px}
+.editor-head small{color:#9da9e8;font-size:10px}
+textarea{
+  width:100%;height:430px;resize:vertical;min-height:300px;
+  background:linear-gradient(145deg,#030817,#08091d);color:#72ffe0;
+  border:1px solid #34448e;border-radius:19px;padding:16px;
+  font:12px/1.65 Consolas,monospace;outline:none;
+  box-shadow:inset 0 0 35px #0009,0 0 18px #443cff10;
+}
+textarea:focus{border-color:#4ceaff;box-shadow:inset 0 0 35px #0009,0 0 0 2px #4ceaff20}
+.enc-view{color:#f0a1ff!important;border-color:#bd54ff!important;text-align:center;font-size:17px!important;padding-top:150px!important;font-weight:800}
+.log{
+  margin-top:11px;min-height:54px;max-height:100px;overflow:auto;padding:12px;
+  border:1px solid #293b7b;border-radius:14px;
+  background:linear-gradient(100deg,#060b20,#100923);color:#a6b4ed;
+  font-size:10px;line-height:1.7
+}
+.credits{
+  margin:14px 2px 0;padding:14px;text-align:center;border-radius:15px;
+  background:linear-gradient(110deg,#080f2b,#130b2b);
+  border:1px solid #303d82;font-size:10px;color:#a4add9
+}
+.credits b{color:#67edff}
+@media(max-width:430px){
+  body{padding:9px}.top{padding:15px 12px 17px;border-radius:23px}
+  .grid{gap:8px}button{padding:12px 7px;font-size:10px}
+  .logo{width:50px;height:50px;flex-basis:50px;font-size:27px;border-radius:15px}
+}
+
+</style>
+</head>
+<body>
+<main class="app">
+<section class="top">
+  <div class="brand">
+    <div class="logo">⚡</div>
+    <div>
+      <h1>SUBWAY SURFERS CITY</h1>
+      <div class="sub">TOWER DATA STUDIO • NEW GENERATION UI</div>
+    </div>
+  </div>
+
+  <div class="status">● <b>READY</b> &nbsp; Tower editor is waiting for a file</div>
+
+  <div class="section grid">
+    <button onclick="document.getElementById('fInput').click()">📂<br>LOAD FILE</button>
+    <button class="primary" onclick="doDecrypt()">🔓<br>DECRYPT</button>
+    <button class="encrypt" onclick="doEncrypt()">🔒<br>ENCRYPT</button>
+    <button onclick="location.reload()">↻<br>RESET</button>
+  </div>
+
+  <div class="section grid">
+    <button class="save" onclick="downloadgamedata()">💾<br>SAVE GAMEDATA</button>
+    <button class="zip" onclick="downloadZip()">🔑<br>SAVE + KEY ZIP</button>
+  </div>
+
+  <div class="editor-head">
+    <span>DATA EDITOR</span><small>JSON / TOWER DATA</small>
+  </div>
+  <textarea id="edit" spellcheck="false">Upload your gamedata tower file to begin...</textarea>
+  <div id="log" class="log">Ready for Tower File edit...</div>
+
+  <div class="credits">
+    <b>NEW MODEL • NEW UI • NEW COLORS</b><br>
+    Updated by : @jakemodeJoin
+  </div>
+</section>
+<input type="file" id="fInput" style="display:none">
+</main>
+<script>
+      // offline service workers
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js')
+      .then(() => console.log('Yo Wassup!🗿 Welcome to Subway City Tower Gamedata Decryptor lite '))
+      .catch((err) => console.log('oh oh! Maybe something is wrong:', err));
+  }
+
+// Fallback Key (In case file doesn't have headers)
+const MASTER_KEY = {"ctr":[165,60,210,221,226,83,76,180,179,29,111,157,27,177,36,219],"key":[101,25,143,81,21,224,250,0,221,114,141,130,197,246,15,67]};
+
+const ZipEngine = {
+    crc32: (r)=>{
+        for(var a,o=[],c=0;c<256;c++){a=c;for(var f=0;f<8;f++)a=1&a?3988292384^a>>>1:a>>>1;o[c]=a}
+        for(var t=-1,n=0;n<r.length;n++)t=t>>>8^o[255&(t^r[n])];return(-1^t)>>>0
+    },
+    pack: (keyStr, fileData, fileName = "tower_decrypted.txt") => {
+        const enc = new TextEncoder();
+        const dataArray = (typeof fileData === "string") ? enc.encode(fileData) : new Uint8Array(fileData);
+        
+        const files = [
+            { n: "Key.txt", d: enc.encode(keyStr) }, 
+            { n: fileName, d: dataArray }
+        ];
+
+        let parts = [], cd = [], pos = 0;
+        files.forEach(f => {
+            const crc = ZipEngine.crc32(f.d), sz = f.d.length, nl = f.n.length;
+            const lfh = new Uint8Array(30 + nl);
+            lfh.set([80,75,3,4,20,0,0,0,0,0,0,0,0,0]);
+            new DataView(lfh.buffer).setUint32(14, crc, true);
+            new DataView(lfh.buffer).setUint32(18, sz, true);
+            new DataView(lfh.buffer).setUint32(22, sz, true);
+            new DataView(lfh.buffer).setUint16(26, nl, true);
+            lfh.set(enc.encode(f.n), 30);
+            parts.push(lfh, f.d);
+            
+            const cfh = new Uint8Array(46 + nl);
+            cfh.set([80,75,1,2,20,0,20,0,0,0,0,0,0,0]);
+            new DataView(cfh.buffer).setUint32(16, crc, true);
+            new DataView(cfh.buffer).setUint32(20, sz, true);
+            new DataView(cfh.buffer).setUint32(24, sz, true);
+            new DataView(cfh.buffer).setUint16(28, nl, true);
+            new DataView(cfh.buffer).setUint32(42, pos, true);
+            cfh.set(enc.encode(f.n), 46);
+            cd.push(cfh);
+            pos += lfh.length + sz;
+        });
+        
+        const cdB = new Blob(cd), eocd = new Uint8Array(22);
+        eocd.set([80,75,5,6,0,0,0,0,files.length,0,files.length,0]);
+        new DataView(eocd.buffer).setUint32(12, cdB.size, true);
+        new DataView(eocd.buffer).setUint32(16, pos, true);
+        return new Blob([...parts, cdB, eocd], {type:"application/zip"});
+    },
+    unpack: async (blob) => {
+        const buf = await blob.arrayBuffer();
+        const view = new DataView(buf);
+        const decoder = new TextDecoder();
+        let results = {};
+        for (let i = 0; i < buf.byteLength - 30; i++) {
+            if (view.getUint32(i, true) === 0x04034b50) {
+                const nameLen = view.getUint16(i + 26, true);
+                const extraLen = view.getUint16(i + 28, true);
+                const dataSize = view.getUint32(i + 18, true);
+                const fileName = decoder.decode(buf.slice(i + 30, i + 30 + nameLen));
+                const fileData = buf.slice(i + 30 + nameLen + extraLen, i + 30 + nameLen + extraLen + dataSize);
+                
+                if (fileName.includes("Key.txt")) {
+                    results.keys = decoder.decode(fileData);
+                } else {
+                    // Auto-detect JSON vs Encrypted Data inside ZIP based on first byte
+                    const checkByte = new Uint8Array(fileData)[0];
+                    if (checkByte === 123) { // 123 is '{' (JSON)
+                        results.json = decoder.decode(fileData);
+                    } else {
+                        results.encData = fileData;
+                    }
+                }
+            }
+        }
+        return results;
+    }
+};
+
+let gCTR, gKey, gEnc, gBuf, lastValidJSON = "";
+let gBaseFilename = "tower"; // Default fallback base filename
+
+// Function to extract base filename without tags
+function extractBaseName(filename) {
+    let name = filename;
+    name = name.replace(/\.zip$/i, '');
+    name = name.replace(/\.txt$/i, '');
+    name = name.replace(/_encrypted$/i, '');
+    name = name.replace(/_decrypted$/i, '');
+    name = name.replace(/_save_with_key$/i, '');
+    return name || "tower";
+}
+
+function print(m, c="#888") {
+    const l = document.getElementById('log');
+    l.innerHTML += `> <span style="color:${c}">${m}</span><br>`;
+    l.scrollTop = l.scrollHeight;
+}
+
+document.getElementById('fInput').onchange = async function(e) {
+    const f = e.target.files[0]; if (!f) return;
+    
+    // Extract base filename upon load to handle custom names dynamically
+    gBaseFilename = extractBaseName(f.name);
+    
+    const txtArea = document.getElementById('edit');
+    txtArea.classList.remove('enc-view');
+    
+    if (f.name.endsWith('.zip')) {
+        const content = await ZipEngine.unpack(f);
+        if (content.keys) {
+            const k = JSON.parse(content.keys);
+            gCTR = new Uint8Array(k.ctr); gKey = new Uint8Array(k.key);
+            
+            if (content.encData) {
+                gBuf = content.encData; 
+                txtArea.value = "ENCRYPTED TOWER DATA DETECTED";
+                txtArea.classList.add('enc-view');
+                print("Encrypted ZIP Loaded. Click Decrypt.");
+            } else if (content.json) {
+                txtArea.value = content.json; 
+                lastValidJSON = content.json;
+                print("Decrypted ZIP Loaded Successfully.");
+            }
+        }
+        return;
+    }
+
+    gBuf = await f.arrayBuffer();
+    const b = new Uint8Array(gBuf);
+    
+    // Auto Detect Algorithm: Check if first byte is 123 '{' (JSON array) or not.
+    // Bytes [0:16] = CTR, Bytes [16:32] = Key
+    if (b.length >= 32 && b[0] !== 123) {
+        gCTR = b.slice(0, 16); 
+        gKey = b.slice(16, 32);
+        txtArea.value = "ENCRYPTED TOWER DATA DETECTED";
+        txtArea.classList.add('enc-view');
+        print(`Encrypted file "${gBaseFilename}" loaded!`);
+    } else {
+        txtArea.value = new TextDecoder().decode(gBuf);
+        lastValidJSON = txtArea.value;
+        print(`Decrypted file "${gBaseFilename}" loaded!`);
+    }
+};
+
+async function doDecrypt() {
+    const txtArea = document.getElementById('edit');
+    if (!txtArea.classList.contains('enc-view')) return print("Already decrypted.", "orange");
+
+    if (!gKey) { gCTR = new Uint8Array(MASTER_KEY.ctr); gKey = new Uint8Array(MASTER_KEY.key); print("Using Master Key Fallback.", "orange"); }
+    
+    txtArea.classList.remove('enc-view');
+    try {
+        const k = await crypto.subtle.importKey("raw", gKey, {name:"AES-CTR"}, false, ["decrypt"]);
+        const d = await crypto.subtle.decrypt({name:"AES-CTR", counter:new Uint8Array(gCTR), length:64}, k, gBuf.slice(32));
+        let s = new TextDecoder().decode(d);
+        
+        // Smarter detection: checks for any carriage return or line feed inside the core string
+        const isPretty = /[\r\n]/.test(s.trim());
+        
+        try { 
+            let j = JSON.parse(s); 
+            
+            // Handle nested profile string if it exists to prevent escaped slashes
+            if (j.profile && typeof j.profile === 'string') {
+                try {
+                    j.profile = JSON.parse(j.profile);
+                } catch(e) {
+                    // Not a JSON string, leave as is
+                }
+            }
+            
+            // Stringify based on the regex detection
+            s = isPretty ? JSON.stringify(j, null, 2) : JSON.stringify(j); 
+            
+        } catch(e){
+            print("Notice: Data is not standard JSON, showing raw text.", "#555");
+        }
+        
+        txtArea.value = s; 
+        lastValidJSON = s;
+        print("Tower Decryption Complete! 🔓✨", "var(--neon-green)");
+    } catch(e) { print("Error Decrypting! File might be corrupted.", "red"); }
+}
+
+async function doEncrypt() {
+    const txtArea = document.getElementById('edit');
+    if (txtArea.classList.contains('enc-view')) return print("Already encrypted.", "orange");
+
+    if (!gKey) { gCTR = new Uint8Array(MASTER_KEY.ctr); gKey = new Uint8Array(MASTER_KEY.key); print("Using Master Key Fallback.", "orange"); }
+    
+    try {
+        let currentJSON = txtArea.value;
+        if (txtArea.classList.contains('enc-view')) currentJSON = lastValidJSON;
+        
+        // Match the smarter detection here too
+        const isPretty = /[\r\n]/.test(currentJSON.trim());
+        
+        let j = JSON.parse(currentJSON);
+        if(j.profile && typeof j.profile === 'object') j.profile = JSON.stringify(j.profile);
+        
+        // Apply formatting before encoding
+        const finalString = isPretty ? JSON.stringify(j, null, 2) : JSON.stringify(j);
+        const e = new TextEncoder().encode(finalString);
+        
+        const k = await crypto.subtle.importKey("raw", gKey, {name:"AES-CTR"}, false, ["encrypt"]);
+        gEnc = await crypto.subtle.encrypt({name:"AES-CTR", counter:new Uint8Array(gCTR), length:64}, k, e);
+        
+        gBuf = new Uint8Array(32 + gEnc.byteLength);
+        gBuf.set(new Uint8Array(gCTR), 0);
+        gBuf.set(new Uint8Array(gKey), 16);
+        gBuf.set(new Uint8Array(gEnc), 32);
+        
+        lastValidJSON = currentJSON;
+        txtArea.value = "ENCRYPTED TOWER DATA DETECTED";
+        txtArea.classList.add('enc-view');
+        print("Data Encrypted successfully! 🔒", "var(--neon-purple)");
+    } catch(e) { print("JSON Parse Error! Check for missing brackets.", "red"); }
+}
+
+async function downloadgamedata() {
+    const txtArea = document.getElementById('edit');
+    if (txtArea.classList.contains('enc-view')) {
+        const dataToSave = gEnc || (gBuf ? gBuf.slice(32) : null);
+        if (!dataToSave) return print("No encrypted data found!", "red");
+        
+        const out = new Uint8Array(32 + dataToSave.byteLength);
+        out.set(new Uint8Array(gCTR), 0); out.set(new Uint8Array(gKey), 16); out.set(new Uint8Array(dataToSave), 32);
+        dl(new Blob([out]), gBaseFilename + "_encrypted.txt");
+        print(`Downloaded ${gBaseFilename}_encrypted.txt`);
+    } else {
+        const jsonText = txtArea.value;
+        dl(new Blob([jsonText], {type: "text/plain"}), gBaseFilename + "_decrypted.txt");
+        print(`Downloaded ${gBaseFilename}_decrypted.txt`);
+    }
+}
+
+async function downloadZip() {
+    if (!gKey) { gCTR = new Uint8Array(MASTER_KEY.ctr); gKey = new Uint8Array(MASTER_KEY.key); }
+    const kStr = JSON.stringify({ctr: Array.from(gCTR), key: Array.from(gKey)});
+    const txtArea = document.getElementById('edit');
+    let data, name;
+
+    if (txtArea.classList.contains('enc-view')) {
+        const dataToSave = gEnc || (gBuf ? gBuf.slice(32) : null);
+        const out = new Uint8Array(32 + dataToSave.byteLength);
+        out.set(new Uint8Array(gCTR), 0); out.set(new Uint8Array(gKey), 16); out.set(new Uint8Array(dataToSave), 32);
+        data = out; name = gBaseFilename + "_encrypted.txt";
+    } else {
+        data = txtArea.value; name = gBaseFilename + "_decrypted.txt";
+    }
+
+    const zip = ZipEngine.pack(kStr, data, name);
+    dl(zip, gBaseFilename + "_save_with_key.zip");
+    print(`Downloaded ${gBaseFilename}_save_with_key.zip`);
+}
+
+function dl(b, n) { const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = n; a.click(); }
+    </script>
+<script>
+const input=document.getElementById('fInput');
+const status=document.querySelector('.status');
+const originalPrint=window.print;
+window.print=function(m,c){
+  originalPrint(m,c);
+  if(status){
+    const clean=String(m).replace(/<[^>]*>/g,'');
+    status.innerHTML='● <b>STATUS</b>   '+clean;
+  }
+};
+input.onchange=async function(e){
+  const f=e.target.files[0];
+  if(f) status.innerHTML='● <b>LOADED</b>   '+f.name;
+  // Reuse the original file-processing handler logic below.
+  const txtArea=document.getElementById('edit');
+  if(!f)return;
+  gBaseFilename=extractBaseName(f.name);
+  txtArea.classList.remove('enc-view');
+  try{
+    if(f.name.toLowerCase().endsWith('.zip')){
+      const content=await ZipEngine.unpack(f);
+      if(content.keys){
+        const k=JSON.parse(content.keys);gCTR=new Uint8Array(k.ctr);gKey=new Uint8Array(k.key);
+        if(content.encData){gBuf=content.encData;txtArea.value='ENCRYPTED TOWER DATA DETECTED';txtArea.classList.add('enc-view');window.print('Encrypted ZIP Loaded. Click Decrypt.');}
+        else if(content.json){txtArea.value=content.json;lastValidJSON=content.json;window.print('Decrypted ZIP Loaded Successfully.');}
+      }
+      return;
+    }
+    gBuf=await f.arrayBuffer();const b=new Uint8Array(gBuf);
+    if(b.length>=32&&b[0]!==123){
+      gCTR=b.slice(0,16);gKey=b.slice(16,32);txtArea.value='ENCRYPTED TOWER DATA DETECTED';
+      txtArea.classList.add('enc-view');window.print('Encrypted file loaded!');
+    }else{
+      txtArea.value=new TextDecoder().decode(gBuf);lastValidJSON=txtArea.value;
+      window.print('Decrypted file loaded!');
+    }
+  }catch(err){window.print('Could not read this file.','red');}
+};
+</script>
+</body>
+</html>
